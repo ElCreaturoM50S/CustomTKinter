@@ -9,6 +9,6 @@ class Root(customtkinter.CKt):
 
         self.gameMenu = None
         self.gameMain = None
-        
+
 root = Root()
 root.mainloop()
