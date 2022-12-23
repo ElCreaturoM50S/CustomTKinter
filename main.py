@@ -1,14 +1,14 @@
 import customtkinter
+from src.components.gameHandler import Handler
 
-class Root(customtkinter.CKt):
+class Root(customtkinter.CTk):
     def __init__(self):
         super().__init__()
 
-        self.geometry("300x300")
-        self.title("snejk")
+        self.geometry("400x500")
 
-        self.gameMenu = None
-        self.gameMain = None
+        self.title("snejk")
+        self.gameMenuHandler = Handler(self)
 
 root = Root()
 root.mainloop()
