@@ -5,38 +5,52 @@ class Root(customtkinter.CTk):
     def __init__(self):
         super().__init__()
 
-        
         self.resizable(0,0)
         self.title("snejk")
         
         self.score = 0
         self.direction = "right"
+        self.isGameOn = False
 
         self.gameWidth = 700
-        self.gameHeight = 700
-        self.speed = 180
+        self.gameHeight = 800
+        self.speed = 120
         self.spaceSize = 50
         self.bodyParts = 2
         self.direction = "right"
         self.foodColor = "#ffff00"
         self.snakeColor = "#ff0000"
         self.backgroundColor = "#808080"
+        self.textBoxSpace = 150
 
         self.geometry(str(self.gameWidth)+'x'+str(self.gameHeight))
 
+        self.canvas = customtkinter.CTkCanvas(
+            master=self,
+            bg=self.backgroundColor,
+            height=self.gameHeight-self.textBoxSpace,
+            width=self.gameWidth
+        )
+
         self.label = customtkinter.CTkLabel(
-            self,
+            master=self,
             text="Scores:{}".format(self.score),
             font=('consolas', 40)
         )
 
-        self.canvas = customtkinter.CTkCanvas(
-            self,
-            bg=self.backgroundColor,
-            height=self.gameHeight,
-            width=self.gameWidth
+        self.button = customtkinter.CTkButton(
+            master=self,
+            command=self.newGame,
+            width=500,
+            height=100,
+            text="START",
+            font=('consolas', 40)
         )
+
+        self.label.pack()
         self.canvas.pack()
+        self.button.pack(pady=10)
+
 
     def nextTurn(self,snake,food):
         x,y = snake.coordinates[0]
@@ -61,8 +75,8 @@ class Root(customtkinter.CTk):
 
         if x == food.coordinates[0] and y == food.coordinates[1]:
             self.score += 1
-
-            #label
+            
+            self.label.configure(text="Scores:{}".format(self.score))
             self.canvas.delete("food")
             food = Food()
         else:
@@ -76,6 +90,9 @@ class Root(customtkinter.CTk):
             self.after(self.speed, self.nextTurn, snake, food)
 
     def changeDirection(self,newDirection):
+        if self.isGameOn == False: 
+            return
+
         if newDirection == 'left':
             if self.direction != 'right':
                 self.direction = newDirection
@@ -97,7 +114,7 @@ class Root(customtkinter.CTk):
         if x<0 or x>=self.gameWidth:
             return True
 
-        elif y<0 or y>=self.gameHeight:
+        elif y<0 or y>=self.gameHeight-self.textBoxSpace:
             return True
 
         for bodyParts in snake.coordinates[1:]:
@@ -107,6 +124,7 @@ class Root(customtkinter.CTk):
         return False
 
     def gameOver(self):
+        self.isGameOn = False
         self.canvas.delete(customtkinter.ALL)
         self.canvas.create_text(self.canvas.winfo_width()/2,
         self.canvas.winfo_height()/2,
@@ -114,6 +132,19 @@ class Root(customtkinter.CTk):
         text='KONIEC',
         fill='red',
         tag='gameover')
+
+    def newGame(self):
+        if self.isGameOn==True:
+            return
+
+        self.canvas.delete(customtkinter.ALL)
+        self.score = 0
+        self.label.configure(text="Scores:{}".format(self.score))
+        self.direction = "right"
+        snake=Snake()
+        food=Food()
+        self.isGameOn = True
+        self.nextTurn(snake, food)
 
 root = Root()
 
@@ -137,9 +168,8 @@ class Snake:
 
 class Food:
     def __init__(self):
-        print((root.gameWidth/root.spaceSize)-1)
-        x = random.randint(0,(root.gameWidth/root.spaceSize)-1)*root.spaceSize
-        y = random.randint(0,(root.gameHeight/root.spaceSize)-1)*root.spaceSize
+        x = random.randint(0,int((root.gameWidth/root.spaceSize)-1))*root.spaceSize
+        y = (random.randint(0,int(((root.gameHeight-root.textBoxSpace*1.5)/root.spaceSize)-1))*root.spaceSize)
 
         self.coordinates = [x,y]
         root.canvas.create_oval(
@@ -150,7 +180,7 @@ class Food:
             fill=root.foodColor,
             tag='food'
         )
-
+        print(self.coordinates)
 
 windowWidth = root.winfo_width()
 windowHeight = root.winfo_height()
@@ -164,10 +194,5 @@ root.bind('<Left>', lambda evnet: root.changeDirection('left'))
 root.bind('<Right>', lambda event: root.changeDirection('right'))
 root.bind('<Up>', lambda event: root.changeDirection('up'))
 root.bind('<Down>', lambda event: root.changeDirection('down'))
-
-snake=Snake()
-food=Food()
-
-root.nextTurn(snake, food)
 
 root.mainloop()
