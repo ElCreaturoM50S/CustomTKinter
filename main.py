@@ -13,7 +13,7 @@ class Root(customtkinter.CTk):
         self.isGameOn = False
 
         self.gameWidth = 700
-        self.gameHeight = 800
+        self.gameHeight = 900
         self.speed = 120
         self.spaceSize = 50
         self.bodyParts = 2
@@ -21,7 +21,9 @@ class Root(customtkinter.CTk):
         self.foodColor = "#ffff00"
         self.snakeColor = "#ff0000"
         self.backgroundColor = "#808080"
-        self.textBoxSpace = 150
+        self.gameoverBackgroundColor = "#000000"
+        self.textBoxSpace = 350
+        self.lockChangeDirection = False
 
         self.geometry(str(self.gameWidth)+'x'+str(self.gameHeight))
 
@@ -47,14 +49,48 @@ class Root(customtkinter.CTk):
             font=('consolas', 40)
         )
 
+        self.colorchanger = customtkinter.CTkOptionMenu(
+            master=self,
+            values=["Czerwony","Zielony","Niebieski"],
+            command=self.changeSnake
+        )
+
+        self.slider = customtkinter.CTkSlider(
+            master=self,
+            from_=240,
+            to=30,
+            command=self.changeSpeed
+        )
+
+        self.speedLabel = customtkinter.CTkLabel(
+            master=self,
+            text="Prędkość snejka",
+            font=('consolas', 40)
+        )
+
         self.label.pack()
         self.canvas.pack()
         self.button.pack(pady=10)
+        self.colorchanger.pack(pady=10)
+        self.speedLabel.pack(pady=10)
+        self.slider.pack()
 
+    def changeSnake(self,color):
+        if color == "Czerwony":
+            self.snakeColor = "#ff0000"
+        elif color == "Zielony":
+            self.snakeColor = "#00ff00"
+        elif color == "Niebieski":
+            self.snakeColor = "#0000ff"
+
+    def changeSpeed(self,speed):
+        print(self.speed)
+        self.speed=int(speed)
 
     def nextTurn(self,snake,food):
-        x,y = snake.coordinates[0]
 
+
+        x,y = snake.coordinates[0]
         if self.direction == 'up':
             y -= self.spaceSize
         elif self.direction == 'down':
@@ -88,11 +124,13 @@ class Root(customtkinter.CTk):
             self.gameOver()
         else:
             self.after(self.speed, self.nextTurn, snake, food)
-
+        self.lockChangeDirection == False
+        
     def changeDirection(self,newDirection):
-        if self.isGameOn == False: 
+        if self.isGameOn == False or self.lockChangeDirection == True: 
             return
 
+        self.lockChangeDirection == True
         if newDirection == 'left':
             if self.direction != 'right':
                 self.direction = newDirection
